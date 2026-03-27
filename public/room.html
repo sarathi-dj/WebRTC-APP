@@ -429,6 +429,7 @@
       roomId = id;
       roomCodeText.textContent = id;
       roomCodeDisplay.style.display = 'block';
+      console.log('Room created:', id);
       startLocalStream();
     });
 
@@ -443,9 +444,11 @@
     });
 
     socket.on('peer-joined', async () => {
+      console.log('Peer joined! Stream ready?', !!localStream);
       if (!localStream) {
         // Camera not ready yet — set flag, offer will be sent after stream loads
         peerJoinedWhileLoading = true;
+        console.log('Stream not ready, setting flag');
         return;
       }
       await initiateCall();
@@ -475,7 +478,9 @@
 
     async function startLocalStream() {
       try {
+        console.log('Requesting camera...');
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        console.log('Camera ready! Flag is:', peerJoinedWhileLoading);
         localVideo.srcObject = localStream;
         lobby.style.display = 'none';
         callScreen.style.display = 'flex';
