@@ -455,6 +455,9 @@
     });
 
     socket.on('offer', async ({ offer }) => {
+      if (!localStream) {
+        await startLocalStream();
+      }
       await setupPeerConnection();
       await pc.setRemoteDescription(offer);
       const answer = await pc.createAnswer();
