@@ -443,6 +443,9 @@
 
     socket.on('peer-joined', async () => {
       // We are the initiator
+      if (!localStream) {
+        await startLocalStream();
+      }
       await setupPeerConnection();
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
