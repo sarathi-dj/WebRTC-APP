@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NexTalk — Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080b14;
+      --surface: #0f1322;
+      --border: #1e2440;
+      --accent: #4fffb0;
+      --accent2: #7b6dff;
+      --text: #e8eaf6;
+      --muted: #5a6080;
+      --danger: #ff4f7b;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79,255,176,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,255,176,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    nav {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; gap: 16px;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+    }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.85rem; color: var(--muted);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .back-btn:hover { color: var(--text); }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; }
+    .logo span { color: var(--accent); }
+
+    /* ── LOBBY ── */
+    #lobby {
+      position: relative; z-index: 1;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    .lobby-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 440px;
+      text-align: center;
+    }
+    .lobby-box h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .lobby-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 36px; line-height: 1.6; }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--muted); font-size: 0.75rem;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 28px 0;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1;
+      height: 1px; background: var(--border);
+    }
+
+    .btn-create {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, rgba(79,255,176,0.15), rgba(79,255,176,0.05));
+      border: 1px solid rgba(79,255,176,0.4);
+      color: var(--accent);
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+    .btn-create:hover {
+      background: linear-gradient(135deg, rgba(79,255,176,0.25), rgba(79,255,176,0.1));
+      box-shadow: 0 0 20px rgba(79,255,176,0.15);
+    }
+
+    .input-group { display: flex; gap: 10px; }
+    input[type="text"] {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 13px 16px;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: rgba(79,255,176,0.4); }
+    input[type="text"]::placeholder { letter-spacing: 0; text-transform: none; color: var(--muted); }
+
+    .btn-join {
+      padding: 13px 20px;
+      background: var(--accent);
+      color: #080b14;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-join:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(79,255,176,0.3); }
+
+    .error-msg {
+      display: none;
+      margin-top: 12px;
+      color: var(--danger);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    /* ── ROOM CODE DISPLAY ── */
+    .room-code-display {
+      display: none;
+      margin-top: 28px;
+      background: var(--bg);
+      border: 1px solid rgba(79,255,176,0.2);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+    }
+    .room-code-display .label {
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .room-code-display .code {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 6px;
+      color: var(--accent);
+    }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 12px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .waiting-text {
+      margin-top: 14px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .dot-pulse { display: inline-flex; gap: 4px; }
+    .dot-pulse span {
+      width: 5px; height: 5px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.4s infinite;
+      display: inline-block;
+    }
+    .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+    .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulse {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── CALL SCREEN ── */
+    #call-screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .video-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 16px;
+    }
+    @media (max-width: 640px) {
+      .video-grid { grid-template-columns: 1fr; }
+    }
+    .video-wrapper {
+      position: relative;
+      background: #0a0d1a;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      aspect-ratio: 16/9;
+    }
+    video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .video-label {
+      position: absolute;
+      bottom: 12px; left: 12px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      color: var(--text);
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    .no-video-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+    }
+    .no-video-overlay .avatar {
+      width: 64px; height: 64px;
+      background: var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .ctrl-btn {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ctrl-btn:hover { border-color: rgba(255,255,255,0.2); background: var(--border); }
+    .ctrl-btn.active { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+    .ctrl-btn.muted { background: rgba(255,79,123,0.15); border-color: rgba(255,79,123,0.4); }
+    .ctrl-btn.end {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: white;
+      width: 60px; height: 60px;
+      font-size: 1.4rem;
+    }
+    .ctrl-btn.end:hover { background: #e0385f; box-shadow: 0 8px 20px rgba(255,79,123,0.4); }
+
+    .room-id-badge {
+      position: absolute;
+      top: 12px; right: 16px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+      z-index: 5;
+    }
+    .room-id-badge strong { color: var(--accent); letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="back-btn">← Back</a>
+    <div class="logo">Nex<span>Talk</span></div>
+  </nav>
+
+  <!-- LOBBY -->
+  <div id="lobby">
+    <div class="lobby-box">
+      <h2>Private Room</h2>
+      <p>Create a new room and share the code, or enter an existing room code to join.</p>
+
+      <button class="btn-create" id="createBtn">✦ Create New Room</button>
+
+      <div class="room-code-display" id="roomCodeDisplay">
+        <div class="label">Your Room Code</div>
+        <div class="code" id="roomCodeText"></div>
+        <button class="copy-btn" id="copyBtn">📋 Copy Code</button>
+        <div class="waiting-text">
+          Waiting for someone to join
+          <div class="dot-pulse"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+
+      <div class="divider">or join existing</div>
+
+      <div class="input-group">
+        <input type="text" id="roomInput" placeholder="Enter room code" maxlength="8"/>
+        <button class="btn-join" id="joinBtn">Join →</button>
+      </div>
+      <div class="error-msg" id="errorMsg"></div>
+    </div>
+  </div>
+
+  <!-- CALL SCREEN -->
+  <div id="call-screen">
+    <div class="room-id-badge">
+      Room: <strong id="currentRoomId"></strong>
+    </div>
+    <div class="video-grid">
+      <div class="video-wrapper">
+        <video id="localVideo" autoplay muted playsinline></video>
+        <div class="video-label">You</div>
+      </div>
+      <div class="video-wrapper">
+        <video id="remoteVideo" autoplay playsinline></video>
+        <div class="no-video-overlay" id="waitingOverlay">
+          <div class="avatar">👤</div>
+          <span>Waiting for peer...</span>
+        </div>
+        <div class="video-label">Peer</div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="micBtn" title="Mute/Unmute">🎙️</button>
+      <button class="ctrl-btn" id="camBtn" title="Camera On/Off">📷</button>
+      <button class="ctrl-btn end" id="endBtn" title="End Call">📵</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="webrtc.js"></script>
+  <script>
+    const socket = io();
+    let roomId = null;
+    let pc = null;
+    let localStream = null;
+    let micOn = true, camOn = true;
+
+    const lobby = document.getElementById('lobby');
+    const callScreen = document.getElementById('call-screen');
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const waitingOverlay = document.getElementById('waitingOverlay');
+    const roomCodeDisplay = document.getElementById('roomCodeDisplay');
+    const roomCodeText = document.getElementById('roomCodeText');
+    const currentRoomId = document.getElementById('currentRoomId');
+    const errorMsg = document.getElementById('errorMsg');
+
+    // Create room
+    document.getElementById('createBtn').onclick = () => {
+      socket.emit('create-room');
+    };
+
+    // Join room
+    document.getElementById('joinBtn').onclick = () => {
+      const code = document.getElementById('roomInput').value.trim();
+      if (!code) return;
+      errorMsg.style.display = 'none';
+      socket.emit('join-room', { roomId: code });
+    };
+
+    document.getElementById('roomInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('joinBtn').click();
+    });
+
+    // Copy code
+    document.getElementById('copyBtn').onclick = () => {
+      navigator.clipboard.writeText(roomCodeText.textContent);
+      document.getElementById('copyBtn').textContent = '✓ Copied!';
+      setTimeout(() => { document.getElementById('copyBtn').textContent = '📋 Copy Code'; }, 2000);
+    };
+
+    // Socket events
+    socket.on('room-created', ({ roomId: id }) => {
+      roomId = id;
+      roomCodeText.textContent = id;
+      roomCodeDisplay.style.display = 'block';
+      startLocalStream();
+    });
+
+    socket.on('join-error', (msg) => {
+      errorMsg.textContent = msg;
+      errorMsg.style.display = 'block';
+    });
+
+    socket.on('joined-room', ({ roomId: id }) => {
+      roomId = id;
+      startLocalStream();
+    });
+
+    socket.on('peer-joined', async () => {
+      // We are the initiator
+      await setupPeerConnection();
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      socket.emit('offer', { offer, roomId });
+    });
+
+    socket.on('offer', async ({ offer }) => {
+      await setupPeerConnection();
+      await pc.setRemoteDescription(offer);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      socket.emit('answer', { answer, roomId });
+    });
+
+    socket.on('answer', async ({ answer }) => {
+      await pc.setRemoteDescription(answer);
+    });
+
+    socket.on('ice-candidate', ({ candidate }) => {
+      if (pc && candidate) pc.addIceCandidate(new RTCIceCandidate(candidate));
+    });
+
+    socket.on('peer-left', () => {
+      remoteVideo.srcObject = null;
+      waitingOverlay.style.display = 'flex';
+      if (pc) { pc.close(); pc = null; }
+    });
+
+    async function startLocalStream() {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        localVideo.srcObject = localStream;
+        lobby.style.display = 'none';
+        callScreen.style.display = 'flex';
+        currentRoomId.textContent = roomId;
+      } catch (err) {
+        alert('Camera/mic access required: ' + err.message);
+      }
+    }
+
+    async function setupPeerConnection() {
+      pc = createPeerConnection();
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+      pc.ontrack = (e) => {
+        remoteVideo.srcObject = e.streams[0];
+        waitingOverlay.style.display = 'none';
+      };
+      pc.onicecandidate = (e) => {
+        if (e.candidate) socket.emit('ice-candidate', { candidate: e.candidate, roomId });
+      };
+    }
+
+    // Controls
+    document.getElementById('micBtn').onclick = () => {
+      micOn = !micOn;
+      localStream.getAudioTracks().forEach(t => t.enabled = micOn);
+      document.getElementById('micBtn').textContent = micOn ? '🎙️' : '🔇';
+      document.getElementById('micBtn').classList.toggle('muted', !micOn);
+    };
+
+    document.getElementById('camBtn').onclick = () => {
+      camOn = !camOn;
+      localStream.getVideoTracks().forEach(t => t.enabled = camOn);
+      document.getElementById('camBtn').textContent = camOn ? '📷' : '📷';
+      document.getElementById('camBtn').classList.toggle('muted', !camOn);
+    };
+
+    document.getElementById('endBtn').onclick = () => {
+      socket.emit('leave-room');
+      if (pc) { pc.close(); pc = null; }
+      if (localStream) { localStream.getTracks().forEach(t => t.stop()); }
+      window.location.href = 'index.html';
+    };
+  </script>
+</body>
+</html>

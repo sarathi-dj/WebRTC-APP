@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NexTalk — Random Match</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080b14;
+      --surface: #0f1322;
+      --border: #1e2440;
+      --accent: #4fffb0;
+      --accent2: #7b6dff;
+      --text: #e8eaf6;
+      --muted: #5a6080;
+      --danger: #ff4f7b;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(123,109,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(123,109,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(130px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 { width: 450px; height: 450px; background: rgba(123,109,255,0.1); top: -100px; left: -100px; }
+    .orb-2 { width: 350px; height: 350px; background: rgba(79,255,176,0.06); bottom: -100px; right: -50px; }
+
+    nav {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; gap: 16px;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+    }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.85rem; color: var(--muted);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .back-btn:hover { color: var(--text); }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; }
+    .logo span { color: var(--accent2); }
+
+    /* ── LOBBY ── */
+    #lobby {
+      position: relative; z-index: 1;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    .lobby-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .spinning-dice {
+      font-size: 4rem;
+      display: inline-block;
+      margin-bottom: 20px;
+      animation: spin 4s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotateY(0); }
+      100% { transform: rotateY(360deg); }
+    }
+
+    .lobby-box h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+    .lobby-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 36px; line-height: 1.65; }
+
+    .btn-find {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(123,109,255,0.2), rgba(123,109,255,0.06));
+      border: 1px solid rgba(123,109,255,0.5);
+      color: #a9a0ff;
+      border-radius: 14px;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+    .btn-find:hover {
+      background: linear-gradient(135deg, rgba(123,109,255,0.3), rgba(123,109,255,0.12));
+      box-shadow: 0 0 30px rgba(123,109,255,0.2);
+      transform: translateY(-2px);
+    }
+    .btn-find:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Searching state */
+    #searching {
+      display: none;
+      margin-top: 28px;
+    }
+    .search-ring {
+      width: 80px; height: 80px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent2);
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      animation: rotate 1s linear infinite;
+    }
+    @keyframes rotate { to { transform: rotate(360deg); } }
+    .search-text {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .btn-cancel {
+      margin-top: 16px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 8px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-cancel:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* ── CALL SCREEN ── */
+    #call-screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .video-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 16px;
+    }
+    @media (max-width: 640px) {
+      .video-grid { grid-template-columns: 1fr; }
+    }
+    .video-wrapper {
+      position: relative;
+      background: #0a0d1a;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      aspect-ratio: 16/9;
+    }
+    video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .video-label {
+      position: absolute;
+      bottom: 12px; left: 12px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      color: var(--text);
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    .no-video-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+    }
+    .no-video-overlay .avatar {
+      width: 64px; height: 64px;
+      background: var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .ctrl-btn {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ctrl-btn:hover { border-color: rgba(255,255,255,0.2); background: var(--border); }
+    .ctrl-btn.muted { background: rgba(255,79,123,0.15); border-color: rgba(255,79,123,0.4); }
+    .ctrl-btn.end {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: white;
+      width: 60px; height: 60px;
+      font-size: 1.4rem;
+    }
+    .ctrl-btn.end:hover { background: #e0385f; box-shadow: 0 8px 20px rgba(255,79,123,0.4); }
+    .ctrl-btn.next {
+      background: rgba(123,109,255,0.15);
+      border-color: rgba(123,109,255,0.4);
+      color: #a9a0ff;
+      width: 60px; height: 60px;
+      font-size: 1rem;
+    }
+    .ctrl-btn.next:hover { background: rgba(123,109,255,0.25); box-shadow: 0 8px 20px rgba(123,109,255,0.2); }
+
+    .connected-badge {
+      position: absolute;
+      top: 12px; right: 16px;
+      background: rgba(79,255,176,0.1);
+      border: 1px solid rgba(79,255,176,0.3);
+      color: var(--accent);
+      padding: 5px 12px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      z-index: 5;
+      display: none;
+    }
+    .connected-badge.show { display: flex; align-items: center; gap: 6px; }
+    .green-dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: blink 1.5s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .tip {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+    .tip strong { color: var(--accent2); }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <nav>
+    <a href="index.html" class="back-btn">← Back</a>
+    <div class="logo">Nex<span>Talk</span></div>
+  </nav>
+
+  <!-- LOBBY -->
+  <div id="lobby">
+    <div class="lobby-box">
+      <div class="spinning-dice">🎲</div>
+      <h2>Random Match</h2>
+      <p>Click below and we'll connect you with a random stranger instantly. Be respectful and make new friends!</p>
+
+      <button class="btn-find" id="findBtn">⚡ Find Someone Now</button>
+
+      <div id="searching">
+        <div class="search-ring"></div>
+        <div class="search-text">Looking for someone to connect with...</div>
+        <button class="btn-cancel" id="cancelBtn">Cancel</button>
+      </div>
+
+      <p class="tip">Press <strong>Next →</strong> during a call to skip to a new stranger.</p>
+    </div>
+  </div>
+
+  <!-- CALL SCREEN -->
+  <div id="call-screen">
+    <div class="connected-badge" id="connectedBadge">
+      <div class="green-dot"></div>
+      Connected to stranger
+    </div>
+    <div class="video-grid">
+      <div class="video-wrapper">
+        <video id="localVideo" autoplay muted playsinline></video>
+        <div class="video-label">You</div>
+      </div>
+      <div class="video-wrapper">
+        <video id="remoteVideo" autoplay playsinline></video>
+        <div class="no-video-overlay" id="waitingOverlay" style="display:flex;">
+          <div class="avatar">👤</div>
+          <span>Connecting...</span>
+        </div>
+        <div class="video-label">Stranger</div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="micBtn" title="Mute/Unmute">🎙️</button>
+      <button class="ctrl-btn" id="camBtn" title="Camera On/Off">📷</button>
+      <button class="ctrl-btn next" id="nextBtn" title="Next stranger">Next →</button>
+      <button class="ctrl-btn end" id="endBtn" title="End Call">📵</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="webrtc.js"></script>
+  <script>
+    const socket = io();
+    let roomId = null;
+    let pc = null;
+    let localStream = null;
+    let micOn = true, camOn = true;
+
+    const lobby = document.getElementById('lobby');
+    const callScreen = document.getElementById('call-screen');
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const waitingOverlay = document.getElementById('waitingOverlay');
+    const connectedBadge = document.getElementById('connectedBadge');
+    const findBtn = document.getElementById('findBtn');
+    const searching = document.getElementById('searching');
+
+    // Start local stream right away for preview
+    async function initLocalStream() {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        localVideo.srcObject = localStream;
+      } catch(e) {
+        alert('Camera/mic access required: ' + e.message);
+      }
+    }
+
+    document.getElementById('findBtn').onclick = () => {
+      findBtn.disabled = true;
+      searching.style.display = 'block';
+      socket.emit('find-random');
+    };
+
+    document.getElementById('cancelBtn').onclick = () => {
+      socket.emit('cancel-random');
+      findBtn.disabled = false;
+      searching.style.display = 'none';
+    };
+
+    socket.on('waiting-for-match', () => {
+      // Already showing spinner
+    });
+
+    socket.on('random-cancelled', () => {
+      findBtn.disabled = false;
+      searching.style.display = 'none';
+    });
+
+    socket.on('random-matched', async ({ roomId: id, initiator }) => {
+      roomId = id;
+      lobby.style.display = 'none';
+      callScreen.style.display = 'flex';
+      if (!localStream) await initLocalStream();
+
+      await setupPeerConnection();
+
+      if (initiator) {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        socket.emit('offer', { offer, roomId });
+      }
+    });
+
+    socket.on('offer', async ({ offer }) => {
+      await setupPeerConnection();
+      await pc.setRemoteDescription(offer);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      socket.emit('answer', { answer, roomId });
+    });
+
+    socket.on('answer', async ({ answer }) => {
+      await pc.setRemoteDescription(answer);
+    });
+
+    socket.on('ice-candidate', ({ candidate }) => {
+      if (pc && candidate) pc.addIceCandidate(new RTCIceCandidate(candidate));
+    });
+
+    socket.on('peer-left', () => {
+      remoteVideo.srcObject = null;
+      waitingOverlay.style.display = 'flex';
+      waitingOverlay.querySelector('span').textContent = 'Stranger disconnected. Press Next!';
+      connectedBadge.classList.remove('show');
+      if (pc) { pc.close(); pc = null; }
+    });
+
+    async function setupPeerConnection() {
+      if (pc) { pc.close(); pc = null; }
+      pc = createPeerConnection();
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+      pc.ontrack = (e) => {
+        remoteVideo.srcObject = e.streams[0];
+        waitingOverlay.style.display = 'none';
+        connectedBadge.classList.add('show');
+      };
+      pc.onicecandidate = (e) => {
+        if (e.candidate) socket.emit('ice-candidate', { candidate: e.candidate, roomId });
+      };
+    }
+
+    // Controls
+    document.getElementById('micBtn').onclick = () => {
+      micOn = !micOn;
+      localStream.getAudioTracks().forEach(t => t.enabled = micOn);
+      document.getElementById('micBtn').textContent = micOn ? '🎙️' : '🔇';
+      document.getElementById('micBtn').classList.toggle('muted', !micOn);
+    };
+
+    document.getElementById('camBtn').onclick = () => {
+      camOn = !camOn;
+      localStream.getVideoTracks().forEach(t => t.enabled = camOn);
+      document.getElementById('camBtn').classList.toggle('muted', !camOn);
+    };
+
+    document.getElementById('nextBtn').onclick = () => {
+      // Leave current room and find a new match
+      socket.emit('leave-room');
+      if (pc) { pc.close(); pc = null; }
+      remoteVideo.srcObject = null;
+      connectedBadge.classList.remove('show');
+      waitingOverlay.style.display = 'flex';
+      waitingOverlay.querySelector('span').textContent = 'Finding next stranger...';
+      roomId = null;
+      socket.emit('find-random');
+    };
+
+    document.getElementById('endBtn').onclick = () => {
+      socket.emit('leave-room');
+      if (pc) { pc.close(); pc = null; }
+      if (localStream) { localStream.getTracks().forEach(t => t.stop()); }
+      window.location.href = 'index.html';
+    };
+
+    // Auto-init preview
+    initLocalStream();
+  </script>
+</body>
+</html>
