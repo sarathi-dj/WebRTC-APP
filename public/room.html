@@ -516,6 +516,14 @@
       pc.onicecandidate = (e) => {
         if (e.candidate) socket.emit('ice-candidate', { candidate: e.candidate, roomId });
       };
+      // Auto retry if ICE fails
+      pc.oniceconnectionstatechange = () => {
+        console.log('ICE state:', pc.iceConnectionState);
+        if (pc.iceConnectionState === 'failed') {
+          console.log('ICE failed, restarting...');
+          pc.restartIce();
+        }
+      };
     }
 
     // Controls
