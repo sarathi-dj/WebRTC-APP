@@ -30,7 +30,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('join-room', ({ roomId }) => {
+    console.log(`Join attempt for room: ${roomId}`);
     const room = rooms[roomId.toUpperCase()];
+    console.log(`Room exists: ${!!room}, Members: ${room ? room.length : 0}`);
     if (!room) {
       socket.emit('join-error', 'Room not found. Check your code and try again.');
       return;
@@ -42,6 +44,7 @@ io.on('connection', (socket) => {
     room.push(socket.id);
     socket.join(roomId.toUpperCase());
     socket.currentRoom = roomId.toUpperCase();
+    console.log(`Emitting peer-joined to room: ${roomId.toUpperCase()}`);
     // Tell existing user to initiate offer
     socket.to(roomId.toUpperCase()).emit('peer-joined', { peerId: socket.id });
     socket.emit('joined-room', { roomId: roomId.toUpperCase() });
