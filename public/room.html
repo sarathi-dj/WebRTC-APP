@@ -388,7 +388,7 @@
     let pc = null;
     let localStream = null;
     let micOn = true, camOn = true;
-    let peerJoinedWhileLoading = false;
+    let peerJoinedWhileLoading = false; // FIX: timing flag
 
     const lobby = document.getElementById('lobby');
     const callScreen = document.getElementById('call-screen');
@@ -443,16 +443,12 @@
     });
 
     socket.on('peer-joined', async () => {
-      // We are the initiator
       if (!localStream) {
-    // Stream not ready yet, set flag and wait
+        // Camera not ready yet — set flag, offer will be sent after stream loads
         peerJoinedWhileLoading = true;
         return;
       }
-      await setupPeerConnection();
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      socket.emit('offer', { offer, roomId });
+      await initiateCall();
     });
 
     socket.on('offer', async ({ offer }) => {
@@ -485,17 +481,21 @@
         callScreen.style.display = 'flex';
         currentRoomId.textContent = roomId;
 
-        // If peer joined while camera was loading, create offer now
+        // FIX: if peer joined while camera was loading, send offer now
         if (peerJoinedWhileLoading) {
           peerJoinedWhileLoading = false;
-          await setupPeerConnection();
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          socket.emit('offer', { offer, roomId });
+          await initiateCall();
         }
       } catch (err) {
         alert('Camera/mic access required: ' + err.message);
       }
+    }
+
+    async function initiateCall() {
+      await setupPeerConnection();
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      socket.emit('offer', { offer, roomId });
     }
 
     async function setupPeerConnection() {
