@@ -150,7 +150,6 @@
       text-align: center;
     }
 
-    /* ── ROOM CODE DISPLAY ── */
     .room-code-display {
       display: none;
       margin-top: 28px;
@@ -221,14 +220,14 @@
       z-index: 1;
     }
     .video-grid {
-      flex: 1;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      padding: 16px;
+      padding: 16px 16px 8px;
     }
     @media (max-width: 640px) {
       .video-grid { grid-template-columns: 1fr; }
+      nav { padding: 16px 20px; }
     }
     .video-wrapper {
       position: relative;
@@ -278,29 +277,28 @@
       align-items: center;
       justify-content: center;
       gap: 12px;
-      padding: 16px;
+      padding: 10px 16px;
       border-top: 1px solid var(--border);
     }
     .ctrl-btn {
-      width: 52px; height: 52px;
+      width: 48px; height: 48px;
       border-radius: 50%;
       border: 1px solid var(--border);
       background: var(--surface);
       color: var(--text);
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       cursor: pointer;
       transition: all 0.2s;
       display: flex; align-items: center; justify-content: center;
     }
     .ctrl-btn:hover { border-color: rgba(255,255,255,0.2); background: var(--border); }
-    .ctrl-btn.active { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
     .ctrl-btn.muted { background: rgba(255,79,123,0.15); border-color: rgba(255,79,123,0.4); }
     .ctrl-btn.end {
       background: var(--danger);
       border-color: var(--danger);
       color: white;
-      width: 60px; height: 60px;
-      font-size: 1.4rem;
+      width: 56px; height: 56px;
+      font-size: 1.3rem;
     }
     .ctrl-btn.end:hover { background: #e0385f; box-shadow: 0 8px 20px rgba(255,79,123,0.4); }
 
@@ -318,6 +316,188 @@
       z-index: 5;
     }
     .room-id-badge strong { color: var(--accent); letter-spacing: 1px; }
+
+    /* ── CHAT BOX ── */
+    .chat-section {
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 280px;
+      background: var(--surface);
+    }
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .chat-header span { color: var(--accent); }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      scroll-behavior: smooth;
+    }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 75%;
+      gap: 3px;
+    }
+    .msg.me { align-self: flex-end; align-items: flex-end; }
+    .msg.peer { align-self: flex-start; align-items: flex-start; }
+
+    .msg-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      padding: 0 4px;
+    }
+    .msg-bubble {
+      padding: 8px 12px;
+      border-radius: 14px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .msg.me .msg-bubble {
+      background: linear-gradient(135deg, rgba(79,255,176,0.2), rgba(79,255,176,0.1));
+      border: 1px solid rgba(79,255,176,0.25);
+      color: var(--text);
+      border-bottom-right-radius: 4px;
+    }
+    .msg.peer .msg-bubble {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+    .msg-time {
+      font-size: 0.68rem;
+      color: var(--muted);
+      padding: 0 4px;
+    }
+
+    /* File message */
+    .file-bubble {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      text-decoration: none;
+    }
+    .file-bubble:hover { opacity: 0.8; }
+    .msg.me .file-bubble {
+      background: linear-gradient(135deg, rgba(79,255,176,0.2), rgba(79,255,176,0.1));
+      border: 1px solid rgba(79,255,176,0.25);
+      border-bottom-right-radius: 4px;
+    }
+    .msg.peer .file-bubble {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+    .file-icon { font-size: 1.4rem; }
+    .file-info { display: flex; flex-direction: column; gap: 2px; }
+    .file-name { font-size: 0.85rem; color: var(--text); font-weight: 500; }
+    .file-size { font-size: 0.72rem; color: var(--muted); }
+
+    /* System message */
+    .sys-msg {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding: 4px 0;
+      font-style: italic;
+    }
+
+    /* Chat input */
+    .chat-input-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .chat-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 24px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .chat-input:focus { border-color: rgba(79,255,176,0.4); }
+    .chat-input::placeholder { color: var(--muted); }
+
+    .attach-btn, .send-btn {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .attach-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+    .send-btn {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #080b14;
+      font-size: 0.9rem;
+    }
+    .send-btn:hover { box-shadow: 0 4px 14px rgba(79,255,176,0.3); transform: scale(1.05); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    #fileInput { display: none; }
+
+    /* Image preview in chat */
+    .msg-img {
+      max-width: 200px;
+      max-height: 160px;
+      border-radius: 10px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+
+    /* Unread badge */
+    .unread-badge {
+      display: none;
+      background: var(--accent);
+      color: #080b14;
+      font-size: 0.65rem;
+      font-weight: 700;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+    }
+    .unread-badge.show { display: flex; }
   </style>
 </head>
 <body>
@@ -359,6 +539,8 @@
     <div class="room-id-badge">
       Room: <strong id="currentRoomId"></strong>
     </div>
+
+    <!-- Videos -->
     <div class="video-grid">
       <div class="video-wrapper">
         <video id="localVideo" autoplay muted playsinline></video>
@@ -373,10 +555,29 @@
         <div class="video-label">Peer</div>
       </div>
     </div>
+
+    <!-- Call Controls -->
     <div class="controls">
       <button class="ctrl-btn" id="micBtn" title="Mute/Unmute">🎙️</button>
       <button class="ctrl-btn" id="camBtn" title="Camera On/Off">📷</button>
       <button class="ctrl-btn end" id="endBtn" title="End Call">📵</button>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="chat-section">
+      <div class="chat-header">
+        💬 Chat
+        <div class="unread-badge" id="unreadBadge">0</div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="sys-msg">Chat is end-to-end via WebRTC data channel</div>
+      </div>
+      <div class="chat-input-area">
+        <input type="file" id="fileInput" accept="*/*"/>
+        <button class="attach-btn" id="attachBtn" title="Send file">📎</button>
+        <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." autocomplete="off"/>
+        <button class="send-btn" id="sendBtn" title="Send">➤</button>
+      </div>
     </div>
   </div>
 
@@ -388,7 +589,9 @@
     let pc = null;
     let localStream = null;
     let micOn = true, camOn = true;
-    let peerJoinedWhileLoading = false; // FIX: timing flag
+    let peerJoinedWhileLoading = false;
+    let dataChannel = null;
+    let unreadCount = 0;
 
     const lobby = document.getElementById('lobby');
     const callScreen = document.getElementById('call-screen');
@@ -399,13 +602,15 @@
     const roomCodeText = document.getElementById('roomCodeText');
     const currentRoomId = document.getElementById('currentRoomId');
     const errorMsg = document.getElementById('errorMsg');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const unreadBadge = document.getElementById('unreadBadge');
 
-    // Create room
-    document.getElementById('createBtn').onclick = () => {
-      socket.emit('create-room');
-    };
+    // ── LOBBY EVENTS ──────────────────────────────────────
 
-    // Join room
+    document.getElementById('createBtn').onclick = () => socket.emit('create-room');
+
     document.getElementById('joinBtn').onclick = () => {
       const code = document.getElementById('roomInput').value.trim();
       if (!code) return;
@@ -417,19 +622,18 @@
       if (e.key === 'Enter') document.getElementById('joinBtn').click();
     });
 
-    // Copy code
     document.getElementById('copyBtn').onclick = () => {
       navigator.clipboard.writeText(roomCodeText.textContent);
       document.getElementById('copyBtn').textContent = '✓ Copied!';
       setTimeout(() => { document.getElementById('copyBtn').textContent = '📋 Copy Code'; }, 2000);
     };
 
-    // Socket events
+    // ── SOCKET EVENTS ─────────────────────────────────────
+
     socket.on('room-created', ({ roomId: id }) => {
       roomId = id;
       roomCodeText.textContent = id;
       roomCodeDisplay.style.display = 'block';
-      console.log('Room created:', id);
       startLocalStream();
     });
 
@@ -444,21 +648,16 @@
     });
 
     socket.on('peer-joined', async () => {
-      console.log('Peer joined! Stream ready?', !!localStream);
       if (!localStream) {
-        // Camera not ready yet — set flag, offer will be sent after stream loads
         peerJoinedWhileLoading = true;
-        console.log('Stream not ready, setting flag');
         return;
       }
       await initiateCall();
     });
 
     socket.on('offer', async ({ offer }) => {
-      if (!localStream) {
-        await startLocalStream();
-      }
-      await setupPeerConnection();
+      if (!localStream) await startLocalStream();
+      await setupPeerConnection(false);
       await pc.setRemoteDescription(offer);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
@@ -477,19 +676,20 @@
       remoteVideo.srcObject = null;
       waitingOverlay.style.display = 'flex';
       if (pc) { pc.close(); pc = null; }
+      dataChannel = null;
+      addSysMsg('Peer disconnected');
     });
+
+    // ── WEBRTC ────────────────────────────────────────────
 
     async function startLocalStream() {
       try {
-        console.log('Requesting camera...');
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        console.log('Camera ready! Flag is:', peerJoinedWhileLoading);
         localVideo.srcObject = localStream;
         lobby.style.display = 'none';
         callScreen.style.display = 'flex';
         currentRoomId.textContent = roomId;
 
-        // FIX: if peer joined while camera was loading, send offer now
         if (peerJoinedWhileLoading) {
           peerJoinedWhileLoading = false;
           await initiateCall();
@@ -500,33 +700,195 @@
     }
 
     async function initiateCall() {
-      await setupPeerConnection();
+      await setupPeerConnection(true);
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       socket.emit('offer', { offer, roomId });
     }
 
-    async function setupPeerConnection() {
+    async function setupPeerConnection(isInitiator) {
       pc = createPeerConnection();
       localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
       pc.ontrack = (e) => {
         remoteVideo.srcObject = e.streams[0];
         waitingOverlay.style.display = 'none';
       };
+
       pc.onicecandidate = (e) => {
         if (e.candidate) socket.emit('ice-candidate', { candidate: e.candidate, roomId });
       };
-      // Auto retry if ICE fails
+
       pc.oniceconnectionstatechange = () => {
-        console.log('ICE state:', pc.iceConnectionState);
-        if (pc.iceConnectionState === 'failed') {
-          console.log('ICE failed, restarting...');
-          pc.restartIce();
+        if (pc.iceConnectionState === 'failed') pc.restartIce();
+      };
+
+      // Data channel for chat
+      if (isInitiator) {
+        dataChannel = pc.createDataChannel('chat');
+        setupDataChannel(dataChannel);
+      } else {
+        pc.ondatachannel = (e) => {
+          dataChannel = e.channel;
+          setupDataChannel(dataChannel);
+        };
+      }
+    }
+
+    // ── DATA CHANNEL (CHAT) ───────────────────────────────
+
+    function setupDataChannel(channel) {
+      channel.onopen = () => {
+        addSysMsg('Connected! You can now chat.');
+        sendBtn.disabled = false;
+      };
+      channel.onclose = () => {
+        addSysMsg('Chat disconnected');
+        sendBtn.disabled = true;
+      };
+      channel.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        if (data.type === 'text') {
+          addMessage('peer', data.text, data.time);
+        } else if (data.type === 'file-meta') {
+          // File incoming — store metadata
+          window._incomingFile = { name: data.name, size: data.size, mime: data.mime, chunks: [], received: 0 };
+        } else if (data.type === 'file-chunk') {
+          if (window._incomingFile) {
+            window._incomingFile.chunks.push(data.chunk);
+            window._incomingFile.received += data.chunk.length;
+            if (window._incomingFile.received >= window._incomingFile.size) {
+              assembleFile(window._incomingFile);
+              window._incomingFile = null;
+            }
+          }
         }
+        // Unread badge if user scrolled up
+        unreadCount++;
+        unreadBadge.textContent = unreadCount;
+        unreadBadge.classList.add('show');
       };
     }
 
-    // Controls
+    function assembleFile(fileData) {
+      // Reassemble base64 chunks into blob
+      const base64 = fileData.chunks.join('');
+      const byteString = atob(base64);
+      const bytes = new Uint8Array(byteString.length);
+      for (let i = 0; i < byteString.length; i++) bytes[i] = byteString.charCodeAt(i);
+      const blob = new Blob([bytes], { type: fileData.mime });
+      const url = URL.createObjectURL(blob);
+      addFileMessage('peer', fileData.name, fileData.size, url, fileData.mime);
+    }
+
+    // ── CHAT UI ───────────────────────────────────────────
+
+    function addMessage(who, text, time) {
+      const div = document.createElement('div');
+      div.className = `msg ${who}`;
+      div.innerHTML = `
+        <div class="msg-label">${who === 'me' ? 'You' : 'Peer'}</div>
+        <div class="msg-bubble">${escapeHtml(text)}</div>
+        <div class="msg-time">${time || now()}</div>
+      `;
+      chatMessages.appendChild(div);
+      scrollChat();
+    }
+
+    function addFileMessage(who, name, size, url, mime) {
+      const div = document.createElement('div');
+      div.className = `msg ${who}`;
+      const isImage = mime && mime.startsWith('image/');
+      div.innerHTML = `
+        <div class="msg-label">${who === 'me' ? 'You' : 'Peer'}</div>
+        ${isImage
+          ? `<a href="${url}" download="${name}"><img src="${url}" class="msg-img" title="Click to download"/></a>`
+          : `<a class="file-bubble" href="${url}" download="${name}">
+              <div class="file-icon">📄</div>
+              <div class="file-info">
+                <div class="file-name">${escapeHtml(name)}</div>
+                <div class="file-size">${formatSize(size)} · Click to download</div>
+              </div>
+            </a>`
+        }
+        <div class="msg-time">${now()}</div>
+      `;
+      chatMessages.appendChild(div);
+      scrollChat();
+    }
+
+    function addSysMsg(text) {
+      const div = document.createElement('div');
+      div.className = 'sys-msg';
+      div.textContent = text;
+      chatMessages.appendChild(div);
+      scrollChat();
+    }
+
+    function scrollChat() {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Clear unread when user scrolls to bottom
+    chatMessages.addEventListener('scroll', () => {
+      const atBottom = chatMessages.scrollHeight - chatMessages.scrollTop <= chatMessages.clientHeight + 10;
+      if (atBottom) {
+        unreadCount = 0;
+        unreadBadge.classList.remove('show');
+      }
+    });
+
+    // Send text message
+    function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text || !dataChannel || dataChannel.readyState !== 'open') return;
+      const time = now();
+      dataChannel.send(JSON.stringify({ type: 'text', text, time }));
+      addMessage('me', text, time);
+      chatInput.value = '';
+    }
+
+    sendBtn.onclick = sendMessage;
+    chatInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+
+    // Send file
+    document.getElementById('attachBtn').onclick = () => document.getElementById('fileInput').click();
+
+    document.getElementById('fileInput').onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file || !dataChannel || dataChannel.readyState !== 'open') return;
+
+      // Send metadata first
+      dataChannel.send(JSON.stringify({
+        type: 'file-meta',
+        name: file.name,
+        size: file.size,
+        mime: file.type
+      }));
+
+      // Read file as base64 and send in chunks
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = reader.result.split(',')[1];
+        const chunkSize = 15000; // 15KB chunks
+        for (let i = 0; i < base64.length; i += chunkSize) {
+          dataChannel.send(JSON.stringify({
+            type: 'file-chunk',
+            chunk: base64.slice(i, i + chunkSize)
+          }));
+        }
+        // Show preview on sender side
+        const url = URL.createObjectURL(file);
+        addFileMessage('me', file.name, file.size, url, file.type);
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    };
+
+    // ── CONTROLS ──────────────────────────────────────────
+
     document.getElementById('micBtn').onclick = () => {
       micOn = !micOn;
       localStream.getAudioTracks().forEach(t => t.enabled = micOn);
@@ -537,7 +899,6 @@
     document.getElementById('camBtn').onclick = () => {
       camOn = !camOn;
       localStream.getVideoTracks().forEach(t => t.enabled = camOn);
-      document.getElementById('camBtn').textContent = camOn ? '📷' : '📷';
       document.getElementById('camBtn').classList.toggle('muted', !camOn);
     };
 
@@ -547,6 +908,25 @@
       if (localStream) { localStream.getTracks().forEach(t => t.stop()); }
       window.location.href = 'index.html';
     };
+
+    // ── HELPERS ───────────────────────────────────────────
+
+    function now() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    // Disable send until data channel is open
+    sendBtn.disabled = true;
   </script>
 </body>
 </html>
